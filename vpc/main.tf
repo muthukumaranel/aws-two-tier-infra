@@ -83,7 +83,7 @@ resource "aws_subnet" "private_subnet" {
   count             = 2
   cidr_block        = var.private_cidrs[count.index]
   vpc_id            = aws_vpc.my-vpc.id
-  availability_zone = data.aws_availabilty_zones.available.names[count.index]
+  availability_zone = data.aws_availability_zones.available.names[count.index]
 
   tags = {
 
@@ -95,10 +95,10 @@ resource "aws_subnet" "private_subnet" {
 # Associate Public Subnet with Public Route Table
 
 resource "aws_route_table_association" "public-subnet-association" {
-  count          = aws_subnet.public_subnet.count
+  count          = 2
   route_table_id = aws_route_table.my-public-route.id
   subnet_id      = aws_subnet.public_subnet.*.id[count.index]
-  depends_on     = ["aws_route_table.table.my-public-route", "aws_subnet.public_subnet"]
+  depends_on     = [aws_route_table.my-public-route, aws_subnet.public_subnet]
 
 }
 
@@ -106,17 +106,17 @@ resource "aws_route_table_association" "public-subnet-association" {
 
 resource "aws_route_table_association" "private-subnet-association" {
 
-  count          = aws_subnet.private_subnet.count
-  route_table_id = aws.default_route_table.my-private-route.id
+  count          = 2
+  route_table_id = aws_default_route_table.my-private-route.id
   subnet_id      = aws_subnet.private_subnet.*.id[count.index]
-  depends_on     = ["aws_default_route_table.my-private-route", "aws_subnet.private_subnet"]
+  depends_on     = [aws_default_route_table.my-private-route, aws_subnet.private_subnet]
 
 }
 
 # Security Group Creation Ingress/egress
 
 resource "aws_security_group" "my-sg" {
-  vpc_id = aws.vpc.my-vpc.id
+  vpc_id = aws_vpc.my-vpc.id
   name   = join("", ["my-sg", "1"])
   dynamic "ingress" {
     for_each = var.ingress-rules
