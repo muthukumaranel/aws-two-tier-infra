@@ -1,1 +1,0 @@
-# aws-two-tier-infra
